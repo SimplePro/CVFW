@@ -36,7 +36,8 @@ void weight_(int m, int n) {
 
 int main() {
 	cout << "Hello, World!";
-	P[0][0] = 10;
-	weight_(15, 10);
+	
+	// P[0][0] = 10;
+	// weight_(15, 10);
 	return 0;
 }
