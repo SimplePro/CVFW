@@ -19,6 +19,10 @@
 // 추후에는 힙을 사용하여 SIZE 를 늘린다. 
 #define SIZE 25000
 
+
+
+// ---------------- start -------------------- CVIW ---------------- start ------------------------
+// 하나의 CVIW 클래스 
 class CVIW {
 	public:
 		int m;
@@ -138,6 +142,11 @@ void CVIW::printWeight() {
 
 // 가중치 구하는 함수 
 void CVIW::Weight_() {
+	if(m == 0 or n == 0) {
+		printf("m and n not must be 0. defined it again please.");
+		return;
+	}
+	
 	case1Weight();
 	case2Weight();
 	case3Weight();
@@ -145,31 +154,82 @@ void CVIW::Weight_() {
 }
 
 
+// CVIW 를 Init 하는 메소드 
 void CVIW::InitMembers(int m_, int n_, int P_[]) {
 	m = m_;
 	n = n_;
 	for(int i = 0; i < m * n; i++) P[i] = P_[i];
 }
+// ----------- ----- end ------------------- CVIW ------------------- end -----------------------
 
 
+
+
+// ----------- start --------------------- CVIW_GROUP --------------------- start ---------------------
+
+// 여러 CVIW 를 한번에 관리하는 클래스. 
+class CVIW_GROUP {
+	public:
+		CVIW cviws[1001];
+		int idx = 0;
+		int size = 0;
+		int m, n;
+		
+		void add_cviw(int P[]);
+		void WeightAll();
+		void Group();
+};
+
+// CVIW 를 추가하는 메소드. 
+void CVIW_GROUP::add_cviw(int P[]) {
+	if(m == 0 or n == 0) {
+		printf("m and n not must be 0. defined it again please.");
+		return;
+	}
+	
+	if(m * n != (sizeof(P) / sizeof(int))) {
+		printf("size of P must be same from m * n. defined it again please.");
+		return;
+	}
+	
+	cviws[idx].InitMembers(m, n, P);
+	idx++;
+}
+
+// CVIW_GROUP 에 있는 모든 CVIW의 가중치를 한번에 구하는 메소드. 
+void CVIW_GROUP::WeightAll() {
+	if(size < 1) {
+		printf("size not must be smaller than 1. defined it again please.")
+		return;
+	}
+	for(int i = 0; i < size; i++) cviws[i].Weight_();
+}
+
+// --------------- end ------------------- CVIW_GROUP ------------------- end -----------------
+
+
+
+
+// ------------ start ---------------------- MAIN --------------------- start --------------------
 int main() {
 	srand(time(NULL));
 	
-	CVIW cviw1;
-	cviw1.m = 128; cviw1.n = 128;
+	CVIW cviw;
+	cviw.m = 156; cviw.n = 156;
 	
-	for(int i = 0; i < 128*128; i++) cviw1.P[i] = rand() % 256 + 1;    // P[i] 가 0 인 경우에는 가중치가 무조건 0 이 나오므로 1 을 더해준다. 
+	for(int i = 0; i < 156*156; i++) cviw.P[i] = rand() % 256 + 1;    // P[i] 가 0 인 경우에는 가중치가 무조건 0 이 나오므로 1 을 더해준다. 
 	
 	
 	
 	clock_t start = clock();
-	cviw1.Weight_();
+	cviw.Weight_();
 	printf("Time: %lf\n", 1.0 * (clock() - start) / CLOCKS_PER_SEC);
 	
 	
 	Sleep(1000);
 	
-	cviw1.printWeight();
+	cviw.printWeight();
 	
 	return 0;
 }
+// ---------------- end ---------------------- MAIN -------------------- end ------------------------
