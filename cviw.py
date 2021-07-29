@@ -121,8 +121,10 @@ class CVIW_GROUP:
         self.important_weight: list = []
         self.dsize: tuple = dsize
 
-    # add cviw method
-    def add_cviw(self, cviw) -> None:
+    # add cviw method, img is flatten list of pixel data to add.
+    def add_cviw(self, img) -> None:
+        cviw = CVIW(self.dsize[0], self.dsize[1], img)
+        cviw.Weight_()
         self.cviws.append(cviw)
 
 
@@ -146,10 +148,11 @@ def load(file, dsize_ = (128, 128)) -> list:
     img = img.flatten().tolist()
 
     return img
-    
+
 
 
 if __name__ == '__main__':
+    # single CVIW Test
     cviw = CVIW(3, 3, np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]))
     cviw.Weight_()
 
@@ -159,3 +162,14 @@ if __name__ == '__main__':
     cviw2.Weight_()
 
     print(f"cost: {cost(cviw.weight, cviw2.weight)}")
+
+
+
+    # CVIW Group Test
+    cviw_group = CVIW_GROUP(class_name="test", dsize=(3, 3))
+    cviw_group.add_cviw([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    cviw_group.add_cviw([5, 2, 3, 4, 1, 3, 4, 2, 6])
+
+    cviw_group.weight_all()
+
+    print(f"cost: {cost(cviw_group.cviws[0].weight, cviw_group.cviws[1].weight)}")
