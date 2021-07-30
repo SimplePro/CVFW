@@ -7,6 +7,6 @@
 
 
 
-1. 가중치를 구한다.    (  CVIW.Weight_()  or  CVIW_GROUP.weight_all()  )  
-2. 여러 가중치들에 대해서 특징 가중치를    (  COST_FUNCTION.avgG()  or  CVIW_GROUP.train_()  )  
+1. 가중치를 구한다.    (  CVIW.Weight_()  or  CVIW_GROUP.weight_all()  )  [ 15 ~ 19  or 208 ~ 210]  
+2. 여러 가중치들에 대해서 특징 가중치를    (  COST_FUNCTION.avgG()  or  CVIW_GROUP.train_()  )  [129 ~ 146 or 223 ~ 234]
 3. 여러 클래스에 대해 cost 를 구하고, cost 가 제일 적은 클래스가 예측 클래스다.  ( not yet )
