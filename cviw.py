@@ -151,10 +151,10 @@ class COST_FUNCTION:
         if len(alpha) == 0: return 0.5
 
         for i in range(len(alpha) - 1):
-            start1 = self.group_range[i][0]
-            end1 = self.group_range[i][1]
+            start1 = self.group_range[i][0]  # alpha[i] 구역의 시작점
+            end1 = self.group_range[i][1]  # alpha[i] 구역의 끝점
 
-            start2 = self.group_range[i+1][0]
+            start2 = self.group_range[i+1][0]  # alpha[i+1] 구역의 시작점
 
 
             # weight이 두개의 Cost function 사이에 위치한 경우
@@ -163,14 +163,14 @@ class COST_FUNCTION:
                 x = (alpha[i] + alpha[i+1]) / 2    # tanh(x - alpha) 에서 alpha 역할
                 b = (np.tanh((alpha[i] - alpha[i+1])/2))**2    # tanh( a(x - alpha) ) + b 에서 b 역할
 
-                return -np.tanh(a * (weight - x))**2 + b - 0.5
+                return -np.tanh(a * (weight - x))**2 + b - 0.5  # cost
 
 
             # weight이 하나의 Cost function 에 위치한 경우
             if weight >= start1 and weight <= end1:
                 a = 5.645 / ((end1 - start1) / 2)    # tanh(ax) 에서 x 의 계수
 
-                return np.tanh(a * (weight - alpha[i]))**2 - 0.5
+                return np.tanh(a * (weight - alpha[i]))**2 - 0.5  # cost
 
         # 마지막 cost function
         start1 = self.group_range[-1][0]
@@ -179,7 +179,7 @@ class COST_FUNCTION:
         if weight >= start1 and weight <= end1:
             a = 5.645 / ((end1 - start1) / 2)    # tanh(ax) 에서 x 의 계수
 
-            return np.tanh(a * (weight - alpha[-1]))**2 - 0.5
+            return np.tanh(a * (weight - alpha[-1]))**2 - 0.5  # cost
 
         # 5.645 는 tanh^2(x) 의 global minimum(y = 0) 에서 y=1까지의 x 간격이다.
 
@@ -200,22 +200,22 @@ class CVIW_GROUP:
 
     # add cviw method, img is flatten list of pixel data to add.
     def add_cviw(self, img) -> None:
-        cviw = CVIW(self.dsize[0], self.dsize[1], img)
-        cviw.Weight_()
-        self.cviws.append(cviw)
+        cviw = CVIW(self.dsize[0], self.dsize[1], img)  # CVIW 클래스 선언
+        cviw.Weight_()  # 가중치 구하기
+        self.cviws.append(cviw)  # cviws 에 cviw 추가.
 
     # all cviw in cviws list get weight.
     def weight_all(self) -> None:
         for i in range(len(self.cviws)):
-            self.cviws[i].Weight_()
+            self.cviws[i].Weight_()  # 모든 cviw 에 대하여 가중치를 구한다.
 
     
     # load then add cviw method.
     def load_add_cviw(self, file):
-        img = cv2.resize(cv2.cvtColor(cv2.imread(file, 1), cv2.COLOR_BGR2GRAY), dsize=self.dsize).flatten().tolist()
-        cviw = CVIW(self.dsize[0], self.dsize[1], img)
-        cviw.Weight_()
-        self.add_cviw(cviw)
+        img = cv2.resize(cv2.cvtColor(cv2.imread(file, 1), cv2.COLOR_BGR2GRAY), dsize=self.dsize).flatten().tolist()  # 로드한 이미지를 flatten 한다.
+        cviw = CVIW(self.dsize[0], self.dsize[1], img)  # CVIW 클래스 선언
+        cviw.Weight_()  # Weight 으로 가중치들을 구한다.
+        self.add_cviw(cviw)  # cviws 에 해당 cviw 를 추가한다.
 
     
     
@@ -228,9 +228,9 @@ class CVIW_GROUP:
                 for cviw in self.cviws:
                     weights.append(cviw.weight[i][j])
                 
-                cost = COST_FUNCTION(weights)
-                cost.avgG()
-                self.important_weight[i].append(cost)
+                cost = COST_FUNCTION(weights)  # cost function 으로 특징가중치를 처리한다.
+                cost.avgG()  # 특징가중치 구하는 메소드 호출
+                self.important_weight[i].append(cost)  # 특징가중치 리스트에 해당 cost function 클래스 대입
                 # print(i * 8 + j, end="\r")
 
 
