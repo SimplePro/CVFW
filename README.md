@@ -8,7 +8,7 @@
 
 
 1. 가중치를 구한다.
-- VIW.Weight_()
+- CVIW.Weight_()
 - CVIW_GROUP.weight_all()
 - 15 ~ 19  or 208 ~ 210  
 
