@@ -1,5 +1,7 @@
 import numpy as np
 import cv2
+from numpy.core.function_base import linspace
+
 
 
 class CVIW:
@@ -8,6 +10,7 @@ class CVIW:
         self.n = n
         self.weight = np.zeros([50000, 8])
         self.P = P
+
     
     def Weight_(self):
         self.case1Weight()
@@ -83,7 +86,6 @@ class CVIW:
             self.weight[m * y + x][1] = w_
             self.weight[m * y + x + 1][5] = 1 / w_
 
-
     # fourth case weight method
     def case4Weight(self):
         P = self.P
@@ -107,55 +109,100 @@ class CVIW:
             if((i+1) % self.m == 0): print("", end="\n")
 
 
+
 # cost function class
 class COST_FUNCTION:
     def __init__(self, weights = []) -> None:
-        self.weights = weights
-        self.avg_r = (weights[-1] - weights[0]) / (len(weights) - 1)
-        self.avg_g = np.array([])
+        self.weights = weights    # 가중치들
+        self.avg_r = (weights[-1] - weights[0]) / (len(weights) - 1)    # 평균거리
+        self.avg_g = np.array([])    # 그룹 원소들의 평균값
+        self.group_range = []    # 그룹들의 범위
 
+
+    # 가중치를 추가하는 메소드
+    def add_weight(self, weight) -> None:
+        self.weights = np.append(self.weights, weight)
+
+
+
+    # 가중치들을 그룹화하는 메소드
     def avgG(self) -> None:
-        groups = [[self.weights[0]]]
+        groups = [[self.weights[0]]]      # 그룹 초기화
+
 
         for i in range(len(self.weights)-1):
-            if self.weights[i+1] - self.weights[i] <= self.avg_r:
-                groups[-1].append(self.weights[i+1])
+            if self.weights[i+1] - self.weights[i] <= self.avg_r:     # 현재 원소와 다음 원소와의 거리가 평균거리보다 짧다면
+                groups[-1].append(self.weights[i+1])    # 같은 그룹에 추가
             
-            else: groups.append([self.weights[i+1]])
+            else:
+                groups.append([self.weights[i+1]])    # 아니라면 다른 그룹에 추가
+        
 
-        single_group_c = len([i for i in groups if len(i) == 1])
+        single_group_c = len([i for i in groups if len(i) == 1])    # 원소의 개수가 1개인 그룹의 개수
+
         for group in groups:
-            if len(group) > single_group_c:
-                self.avg_g = np.append(self.avg_g, sum(group) / len(group))
+            if len(group) > single_group_c:    # 그룹 원소의 개수가 싱글그룹개수보다 많다면
+                self.avg_g = np.append(self.avg_g, sum(group) / len(group))    # 그룹 원소들의 평균을 avg_g 에 추가한다.
+                self.group_range.append([group[0] - self.avg_r, group[-1] + self.avg_r])    # 그룹 범위를 group_range 에 추가한다.
 
-    
+    # cost method
     def cost(self, weight):
-        for alpha in self.avg_g:
-            if weight >= alpha - 3 and weight <= alpha + 3: return (np.tanh(weight - alpha))**2
+        alpha = self.avg_g
+        if len(alpha) == 0: return 0.5
+
+        for i in range(len(alpha) - 1):
+            start1 = self.group_range[i][0]
+            end1 = self.group_range[i][1]
+
+            start2 = self.group_range[i+1][0]
+
+
+            # weight이 두개의 Cost function 사이에 위치한 경우
+            if end1 > start2  and weight >= alpha[i] and weight <= alpha[i+1]:
+                a = 5.645 / ((alpha[i+1] - alpha[i])/2)    # tanh(ax) 에서 x 의 계수
+                x = (alpha[i] + alpha[i+1]) / 2    # tanh(x - alpha) 에서 alpha 역할
+                b = (np.tanh((alpha[i] - alpha[i+1])/2))**2    # tanh( a(x - alpha) ) + b 에서 b 역할
+
+                return -np.tanh(a * (weight - x))**2 + b - 0.5
+
+
+            # weight이 하나의 Cost function 에 위치한 경우
+            if weight >= start1 and weight <= end1:
+                a = 5.645 / ((end1 - start1) / 2)    # tanh(ax) 에서 x 의 계수
+
+                return np.tanh(a * (weight - alpha[i]))**2 - 0.5
+
+        # 마지막 cost function
+        start1 = self.group_range[-1][0]
+        end1 = self.group_range[-1][1]
+
+        if weight >= start1 and weight <= end1:
+            a = 5.645 / ((end1 - start1) / 2)    # tanh(ax) 에서 x 의 계수
+
+            return np.tanh(a * (weight - alpha[-1]))**2 - 0.5
+
+        # 5.645 는 tanh^2(x) 의 global minimum(y = 0) 에서 y=1까지의 x 간격이다.
+
 
         return 1
-            
-        
-a = COST_FUNCTION(weights=[1, 2, 4, 6, 9])
-a.avgG()
-print(a.avg_g)
-# print(a.cost())
+
+
 
 # CVIW GROUP class
 class CVIW_GROUP:
     def __init__(self, class_name = "", dsize = (128, 128), cviws = []) -> None:
         self.cviws: list = cviws
         self.class_name: str = class_name
-        self.important_weight: list = np.zeros([50000, 8])
+        self.important_weight: list = []
         # self.important_weight[i][j] = COST_FUNCTION(weights)
         self.dsize: tuple = dsize
+
 
     # add cviw method, img is flatten list of pixel data to add.
     def add_cviw(self, img) -> None:
         cviw = CVIW(self.dsize[0], self.dsize[1], img)
         cviw.Weight_()
         self.cviws.append(cviw)
-
 
     # all cviw in cviws list get weight.
     def weight_all(self) -> None:
@@ -170,10 +217,26 @@ class CVIW_GROUP:
         cviw.Weight_()
         self.add_cviw(cviw)
 
+    
+    
+    # train method.
+    def train_(self):
+        for i in range(self.dsize[0] * self.dsize[1]):
+            self.important_weight.append([])
+            for j in range(8):
+                weights = []
+                for cviw in self.cviws:
+                    weights.append(cviw.weight[i][j])
+                
+                cost = COST_FUNCTION(weights)
+                cost.avgG()
+                self.important_weight[i].append(cost)
+                print(i * 8 + j, end="\r")
+
 
 
 if __name__ == '__main__':
-    # single CVIW Test
+    # Single CVIW Test
     cviw = CVIW(3, 3, np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]))
     cviw.Weight_()
 
@@ -191,3 +254,26 @@ if __name__ == '__main__':
     # cviw_group.load_add_cviw("file name")
 
     cviw_group.weight_all()
+
+
+    # Time Test
+    from time import time
+    from random import randint
+    import matplotlib.pyplot as plt
+
+    cviw_group = CVIW_GROUP(class_name="test", dsize=(128, 128))
+    for i in range(500):
+        cviw_group.add_cviw([randint(1, 256) for _ in range(128 * 128)])
+
+    start_time = time()
+    cviw_group.train_()
+    print(f"time: {time() - start_time}")
+
+
+    # Cost Function
+    cost_function = COST_FUNCTION(weights = [1, 7, 9, 14, 15, 23, 27])
+    cost_function.avgG()
+    x = linspace(3, 30, 1000)
+    y = [cost_function.cost(i) for i in x]
+    plt.plot(x, y)
+    plt.show()
