@@ -231,7 +231,7 @@ class CVIW_GROUP:
                 cost = COST_FUNCTION(weights)
                 cost.avgG()
                 self.important_weight[i].append(cost)
-                print(i * 8 + j, end="\r")
+                # print(i * 8 + j, end="\r")
 
 
 
@@ -266,6 +266,7 @@ if __name__ == '__main__':
         cviw_group.add_cviw([randint(1, 256) for _ in range(128 * 128)])
 
     start_time = time()
+    cviw_group.weight_all()
     cviw_group.train_()
     print(f"time: {time() - start_time}")
 
