@@ -107,18 +107,47 @@ class CVIW:
             if((i+1) % self.m == 0): print("", end="\n")
 
 
-# cost method
-def cost(weight1, weight2):
-    return sum(sum(abs(weight1 - weight2)))  # 차이의 합
+# cost function class
+class COST_FUNCTION:
+    def __init__(self, weights = []) -> None:
+        self.weights = weights
+        self.avg_r = (weights[-1] - weights[0]) / (len(weights) - 1)
+        self.avg_g = np.array([])
 
+    def avgG(self) -> None:
+        groups = [[self.weights[0]]]
 
+        for i in range(len(self.weights)-1):
+            if self.weights[i+1] - self.weights[i] <= self.avg_r:
+                groups[-1].append(self.weights[i+1])
+            
+            else: groups.append([self.weights[i+1]])
+
+        single_group_c = len([i for i in groups if len(i) == 1])
+        for group in groups:
+            if len(group) > single_group_c:
+                self.avg_g = np.append(self.avg_g, sum(group) / len(group))
+
+    
+    def cost(self, weight):
+        for alpha in self.avg_g:
+            if weight >= alpha - 3 and weight <= alpha + 3: return (np.tanh(weight - alpha))**2
+
+        return 1
+            
+        
+a = COST_FUNCTION(weights=[1, 2, 4, 6, 9])
+a.avgG()
+print(a.avg_g)
+# print(a.cost())
 
 # CVIW GROUP class
 class CVIW_GROUP:
-    def __init__(self, class_name = "", cviws = [], dsize = (128, 128)) -> None:
+    def __init__(self, class_name = "", dsize = (128, 128), cviws = []) -> None:
         self.cviws: list = cviws
         self.class_name: str = class_name
-        self.important_weight: list = []
+        self.important_weight: list = np.zeros([50000, 8])
+        # self.important_weight[i][j] = COST_FUNCTION(weights)
         self.dsize: tuple = dsize
 
     # add cviw method, img is flatten list of pixel data to add.
@@ -142,14 +171,6 @@ class CVIW_GROUP:
         self.add_cviw(cviw)
 
 
-# load image method
-def load(file, dsize_ = (128, 128)) -> list:
-    img = cv2.resize(cv2.cvtColor(cv2.imread(file, 1), cv2.COLOR_BGR2GRAY), dsize=dsize_)
-    img = img.flatten().tolist()
-
-    return img
-
-
 
 if __name__ == '__main__':
     # single CVIW Test
@@ -161,15 +182,12 @@ if __name__ == '__main__':
     cviw2 = CVIW(3, 3, np.array([5, 2, 3, 4, 1, 3, 4, 2, 6]))
     cviw2.Weight_()
 
-    print(f"cost: {cost(cviw.weight, cviw2.weight)}")
-
 
 
     # CVIW Group Test
     cviw_group = CVIW_GROUP(class_name="test", dsize=(3, 3))
     cviw_group.add_cviw([1, 2, 3, 4, 5, 6, 7, 8, 9])
     cviw_group.add_cviw([5, 2, 3, 4, 1, 3, 4, 2, 6])
+    # cviw_group.load_add_cviw("file name")
 
     cviw_group.weight_all()
-
-    print(f"cost: {cost(cviw_group.cviws[0].weight, cviw_group.cviws[1].weight)}")
