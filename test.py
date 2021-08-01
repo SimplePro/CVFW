@@ -12,11 +12,12 @@ cviw_model.train()
 
 # cviw_model.save_model(model_name="test")    -> memory 가 너무 많이 소비됨.  메모리 효율을 많이 늘릴 방법을 찾아야 한다.
 
-for file in os.listdir("./test/femaleeyes"):
+for file in os.listdir("./image/test/femaleeyes"):
     female = cv2.resize(cv2.cvtColor(cv2.imread(f"C:\\kimdonghwan\\python\\CVIW\\image\\test\\femaleeyes\\{file}", 1), cv2.COLOR_BGR2GRAY), dsize=(100, 100)).flatten().tolist()
-    print(cviw_model.predict_class(female))
+    print("label: female   ", "predict:", cviw_model.predict_class(female))
 
+print("--------------")
 
-for file in os.listdir('./test/maleeyes'):
+for file in os.listdir('./image/test/maleeyes'):
     male = cv2.resize(cv2.cvtColor(cv2.imread(f"C:\\kimdonghwan\\python\\CVIW\\image\\test\\maleeyes\\{file}", 1), cv2.COLOR_BGR2GRAY), dsize=(100, 100)).flatten().tolist()
-    print(cviw_model.predict_class(male))
+    print("label: male   ", "predict:", cviw_model.predict_class(male))
