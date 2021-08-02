@@ -4,35 +4,39 @@ from numpy.core.function_base import linspace
 from os import listdir
 import pickle
 
-class CVIW:
-    def __init__(self, m, n, P) -> None:
-        self.m = m
-        self.n = n
-        self.weight = np.zeros([50000, 2])
-        self.P = (np.array(P) + 1).tolist()
 
-    
-    def Weight_(self):
-        for x in range(self.m-1):
-            for y in range(self.n-1):
+
+# Weight method
+def Weight(m, n, P):
+    weight = np.zeros([50000, 2])
+    P = (np.array(P) + 1).tolist()
+
+
+    for x in range(m-1):
+            for y in range(n-1):
                 # right
-                w_ =  self.P[self.m * y + x + 1] / self.P[self.m * y + x]
-                self.weight[self.m * y + x][0] = w_
+                w_ =  P[m * y + x + 1] / P[m * y + x]
+                weight[m * y + x][0] = w_
                 
                 # down
-                w_ = self.P[self.m * (y+1) + x] / self.P[self.m * y + x]
-                self.weight[self.m * y + x][1] = w_
+                w_ = P[m * (y+1) + x] / P[m * y + x]
+                weight[m * y + x][1] = w_
 
-        for x in range(self.m-1):
-            # right
-            w_ = self.P[self.m * (self.n - 1) + x + 1] / self.P[self.m * (self.n-1) + x]
-            self.weight[self.m * (self.n-1) + x][0] = w_
 
-        for y in range(self.n-1):
-            # down
-            w_ = self.P[self.m * (y+2) - 1] / self.P[self.m * (y+1) - 1]
-            self.weight[self.m * (y+1) - 1][1] = w_
-	
+    for x in range(m-1):
+        # right
+        w_ = P[m * (n - 1) + x + 1] / P[m * (n-1) + x]
+        weight[m * (n-1) + x][0] = w_
+
+
+    for y in range(n-1):
+        # down
+        w_ = P[m * (y+2) - 1] / P[m * (y+1) - 1]
+        weight[m * (y+1) - 1][1] = w_
+
+
+    return weight
+
 
 
 # cost function class
@@ -83,60 +87,39 @@ class COST_FUNCTION:
         if len(self.iw) == 0: return 0
         return np.min(abs(self.iw - weight))
 
-        # np_group_range = np.array(self.group_range).flatten()
-        # abs(np_group_range - weight)
-
-        # for i in range(len(self.group_range)):
-        #     start = self.group_range[i][0]
-        #     end = self.group_range[i][1]
-
-        #     if weight >= start and weight <= end: return 0
-
-        # return 1
 
 
 # CVIW GROUP class
 class CVIW_GROUP:
-    def __init__(self, class_name = "", dsize = (128, 128), cviws = []) -> None:
-        self.cviws: list = cviws
+    def __init__(self, class_name = "", dsize = (128, 128)) -> None:
+        self.cviws_weight: list = []
         self.class_name: str = class_name
         self.important_weight: list = []
         # self.important_weight[i][j] = COST_FUNCTION(weights)
         self.dsize: tuple = dsize
         self.iw_count = 0  # 특징 가중치의 개수
 
-
-    # add cviw method, img is flatten list of pixel data to add.
-    def add_cviw(self, img) -> None:
-        cviw = CVIW(self.dsize[0], self.dsize[1], img)  # CVIW 클래스 선언
-        self.cviws.append(cviw)  # cviws 에 cviw 추가.
-
-
-    # all cviw in cviws list get weight.
-    def weight_all(self) -> None:
-        for i in range(len(self.cviws)):
-            self.cviws[i].Weight_()  # 모든 cviw 에 대하여 가중치를 구한다.
+    
+    def add_cviw_weight(self, img) -> None:
+        self.cviws_weight.append(Weight(self.dsize[0], self.dsize[1], img))
 
     
     # load then add cviw method.
     def load_add_cviw(self, file):
         img = cv2.resize(cv2.cvtColor(cv2.imread(file, 1), cv2.COLOR_BGR2GRAY), dsize=self.dsize).flatten().tolist()  # 로드한 이미지를 flatten 한다.
-        cviw = CVIW(self.dsize[0], self.dsize[1], img)  # CVIW 클래스 선언
-        self.cviws.append(cviw)  # cviws 에 해당 cviw 를 추가한다.
+        self.cviws_weight.append(Weight(self.dsize[0], self.dsize[1], img))
 
     
     # train method.
     def train_(self):
-        self.weight_all()  # 가중치를 먼저 구함
-
         percent = self.dsize[0] * self.dsize[1]
 
         for i in range(self.dsize[0] * self.dsize[1]):
             self.important_weight.append([])
             for j in range(2):
                 weights = []
-                for cviw in self.cviws:
-                    weights.append(cviw.weight[i][j])
+                for w in self.cviws_weight:
+                    weights.append(w[i][j])
                 
                 cost = COST_FUNCTION(sorted(weights))  # cost function 으로 특징가중치를 처리한다.
                 cost.important_weight()  # 특징 그룹을 구하는 메소드.
@@ -147,19 +130,12 @@ class CVIW_GROUP:
 
         print(self.iw_count)
         
-        del self.cviws
+        self.cviws_weight = []  # 메모리 비움.
 
 
     # cost 를 구하는 메소드.
     def cost_function(self, weight):
-        cost = 0
-
-        for i in range(self.dsize[0] * self.dsize[1]):
-            for j in range(2):
-                cost += self.important_weight[i][j].cost(weight[i][j])
-
-        cost /= self.iw_count
-        return cost
+        return sum([self.important_weight[i][j].cost(weight[i][j]) for i in range(self.dsize[0] * self.dsize[1]) for j in range(2)]) / self.iw_count
 
 
 
@@ -175,7 +151,7 @@ class CVIW_MODEL:
     def add_directory(self, class_name = "", path = "") -> None:
         self.classes.append(class_name)
         imgs = listdir(path)
-        cviw_group = CVIW_GROUP(class_name=class_name, dsize = self.dsize, cviws=[])
+        cviw_group = CVIW_GROUP(class_name=class_name, dsize = self.dsize)
 
         for img in imgs:
             cviw_group.load_add_cviw(file = f'{path}\\{img}')
@@ -192,13 +168,12 @@ class CVIW_MODEL:
 
     # 클래스를 예측하는 메소드
     def predict_class(self, img):
-        cviw = CVIW(self.dsize[0], self.dsize[1], img)
-        cviw.Weight_()
+        cviw_weight = Weight(self.dsize[0], self.dsize[1], img)
 
         cost_list = []
 
         for cviw_group in self.cviw_groups:
-            cost_list.append(cviw_group.cost_function(cviw.weight))
+            cost_list.append(cviw_group.cost_function(cviw_weight))
         
         print(cost_list)
         print(cost_list[0] / sum(cost_list), cost_list[1] / sum(cost_list))
@@ -245,7 +220,7 @@ if __name__ == '__main__':
 
     cviw_group = CVIW_GROUP(class_name="test", dsize=(128, 128))
     for i in range(500):
-        cviw_group.add_cviw([randint(1, 256) for _ in range(128 * 128)])
+        cviw_group.add_cviw_weight([randint(1, 256) for _ in range(128 * 128)])
 
     start_time = time()
     cviw_group.train_()
