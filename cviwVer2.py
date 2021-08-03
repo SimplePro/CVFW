@@ -43,13 +43,15 @@ def Weight(m, n, P):
 
 # cost function class
 class COST_FUNCTION:
-    def __init__(self, weights = []) -> None:
+    def __init__(self, weights = [], feature_group_number = 3, feature_weight_number = 50) -> None:
         self.weights = sorted(weights)    # 가중치들
         self.avg_r = (weights[-1] - weights[0]) / (len(weights) - 1)    # 평균거리
         self.iw_count = 0
         self.iw = []  # 특징 그룹의 원소들의 평균값
         self.mean_groups = []  # 모든 그룹의 원소들의 평균값
         self.group_c = []  # 모든 그룹의 원소들의 개수
+        self.feature_group_number = feature_group_number
+        self.feature_weight_number = feature_weight_number
 
 
     # 가중치를 추가하는 메소드
@@ -72,16 +74,23 @@ class COST_FUNCTION:
                 self.group_c.append(count)
                 S = self.weights[i+1]
                 count = 1
+    
+        self.iw = []
 
         self.iw_count = 1
-        if len(self.mean_groups) < 3: self.iw = self.mean_groups
+        if len(self.mean_groups) < self.feature_group_number:
+            if len(self.mean_groups) == 0: self.iw_count = 0
+
+            else:
+                for i in range(len(self.group_c)):
+                    if self.group_c[i] > self.feature_weight_number:
+                        self.iw.append(self.mean_groups[i])
 
         else:
             argsort_ = np.argsort(self.group_c)
             for i in range(len(argsort_)):
-                if argsort_[i] <= 3: self.iw.append(self.mean_groups[i])
-
-        if len(self.mean_groups) == 0: self.iw_count = 0
+                if argsort_[i] < self.feature_weight_number and self.group_c[i] > self.feature_weight_number:
+                    self.iw.append(self.mean_groups[i])
 
         self.weights = []  # 메모리 비움
 
@@ -135,7 +144,7 @@ class CVIW_GROUP:
 
     
     # train method.
-    def train_(self):
+    def train_(self, feature_group_number, feature_weight_number):
         for i in tqdm(range(self.dsize[0] * self.dsize[1]), desc=self.class_name, mininterval=1):
             self.feature_weight.append([])
             for j in range(2):
@@ -175,10 +184,12 @@ class CVIW_GROUP:
 
 # CVIW 모델 클래스
 class CVIW_MODEL:
-    def __init__(self, dsize = (128, 128)) -> None:
+    def __init__(self, dsize = (128, 128), feature_group_number = [3], feature_weight_number = [50]) -> None:
         self.cviw_groups = []
         self.classes = []
         self.dsize = dsize
+        self.feature_group_number = feature_group_number
+        self.feature_weight_number = feature_weight_number
 
     
     # 디렉토리 경로로 CVIW_GROUP 을 추가하는 메소드.
@@ -196,7 +207,7 @@ class CVIW_MODEL:
     # 학습하는 메소드
     def train(self) -> None:
         for i in range(len(self.classes)):
-            self.cviw_groups[i].train_()
+            self.cviw_groups[i].train_(self.feature_group_number, self.feature_weight_number)
 
 
     # 클래스를 예측하는 메소드
