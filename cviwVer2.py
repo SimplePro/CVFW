@@ -1,9 +1,11 @@
+from ipywidgets.widgets.widget_string import Label
 import numpy as np
 import cv2
 from numpy.core.function_base import linspace
 from os import listdir
 import pickle
-
+from tqdm import tqdm
+from multiprocess import Pool
 
 
 # Weight method
@@ -45,7 +47,6 @@ class COST_FUNCTION:
         self.weights = sorted(weights)    # 가중치들
         self.avg_r = (weights[-1] - weights[0]) / (len(weights) - 1)    # 평균거리
         self.iw_count = 0
-        self.single_group_c = 0  # 원소의 개수가 하나인 그룹
         self.iw = []  # 특징 그룹의 원소들의 평균값
         self.mean_groups = []  # 모든 그룹의 원소들의 평균값
         self.group_c = []  # 모든 그룹의 원소들의 개수
@@ -57,7 +58,7 @@ class COST_FUNCTION:
 
 
     # 특징 그룹들의 범위를 골라내는 메소드
-    def important_weight(self) -> None:
+    def feature_weight(self) -> None:
 
         count = 1
         S = self.weights[0]
@@ -72,20 +73,43 @@ class COST_FUNCTION:
                 S = self.weights[i+1]
                 count = 1
 
+        self.iw_count = 1
+        if len(self.mean_groups) < 3: self.iw = self.mean_groups
 
-        self.single_group_c = self.group_c.count(1)    # 원소의 개수가 1개인 그룹의 개수
-        if self.single_group_c == 0: self.single_group_c = 1
+        else:
+            argsort_ = np.argsort(self.group_c)
+            for i in range(len(argsort_)):
+                if argsort_[i] <= 3: self.iw.append(self.mean_groups[i])
 
-        for i in range(len(self.group_c)):
-            if self.group_c[i] > self.single_group_c:    # 그룹 원소의 개수가 싱글그룹개수보다 많다면
-                self.iw.append(self.mean_groups[i])
-                self.iw_count = 1
+        if len(self.mean_groups) == 0: self.iw_count = 0
+
+        self.weights = []  # 메모리 비움
 
 
     # cost method
-    def cost(self, weight):
+    def cost_function(self, weight):
         if len(self.iw) == 0: return 0
-        return np.min(abs(self.iw - weight))
+        return np.min((self.iw - weight)**2)
+
+    
+    # update method
+    def update__(self, feature_group_number, feature_weight_number):
+        self.iw = []
+
+        self.iw_count = 1
+        if len(self.mean_groups) < feature_group_number:
+            if len(self.mean_groups) == 0: self.iw_count = 0
+
+            else:
+                for i in range(len(self.group_c)):
+                    if self.group_c[i] > feature_weight_number:
+                        self.iw.append(self.mean_groups[i])
+
+        else:
+            argsort_ = np.argsort(self.group_c)
+            for i in range(len(argsort_)):
+                if argsort_[i] < feature_weight_number and self.group_c[i] > feature_weight_number:
+                    self.iw.append(self.mean_groups[i])
 
 
 
@@ -94,8 +118,8 @@ class CVIW_GROUP:
     def __init__(self, class_name = "", dsize = (128, 128)) -> None:
         self.cviws_weight: list = []
         self.class_name: str = class_name
-        self.important_weight: list = []
-        # self.important_weight[i][j] = COST_FUNCTION(weights)
+        self.feature_weight: list = []
+        # self.feature_weight[i][j] = COST_FUNCTION(weights)
         self.dsize: tuple = dsize
         self.iw_count = 0  # 특징 가중치의 개수
 
@@ -112,30 +136,40 @@ class CVIW_GROUP:
     
     # train method.
     def train_(self):
-        percent = self.dsize[0] * self.dsize[1]
-
-        for i in range(self.dsize[0] * self.dsize[1]):
-            self.important_weight.append([])
+        for i in tqdm(range(self.dsize[0] * self.dsize[1]), desc=self.class_name, mininterval=1):
+            self.feature_weight.append([])
             for j in range(2):
                 weights = []
                 for w in self.cviws_weight:
                     weights.append(w[i][j])
                 
                 cost = COST_FUNCTION(sorted(weights))  # cost function 으로 특징가중치를 처리한다.
-                cost.important_weight()  # 특징 그룹을 구하는 메소드.
+                cost.feature_weight()  # 특징 그룹을 구하는 메소드.
                 self.iw_count += cost.iw_count  # 특징가중치의 존재 여부(0, 1) 를 iw count 에 더한다.
-                self.important_weight[i].append(cost)  # 특징가중치 리스트에 해당 cost function 클래스 대입
-            
-            print(f'{i / percent * 100} %', end="\r")
-
-        print(self.iw_count)
+                self.feature_weight[i].append(cost)  # 특징가중치 리스트에 해당 cost function 클래스 대입
         
         self.cviws_weight = []  # 메모리 비움.
 
+    
+    # update method
+    def update_(self, feature_group_number, feature_weight_number):
+        self.iw_count = 0
+        for i in range(self.dsize[0] * self.dsize[1]):
+            for j in range(2):
+                self.feature_weight[i][j].update__(feature_group_number, feature_weight_number)
+                self.iw_count += self.feature_weight[i][j].iw_count
+
+
+    # update cost method
+    # def update_cost(self, weight):
+    #     for i in range(self.dsize[0] * self.dsize[1]):
+    #         for j in range(2):
+    #             pass
+                
 
     # cost 를 구하는 메소드.
-    def cost_function(self, weight):
-        return sum([self.important_weight[i][j].cost(weight[i][j]) for i in range(self.dsize[0] * self.dsize[1]) for j in range(2)]) / self.iw_count
+    def cost(self, weight):
+        return sum([self.feature_weight[i][j].cost_function(weight[i][j]) for i in range(self.dsize[0] * self.dsize[1]) for j in range(2)]) / self.iw_count
 
 
 
@@ -163,7 +197,6 @@ class CVIW_MODEL:
     def train(self) -> None:
         for i in range(len(self.classes)):
             self.cviw_groups[i].train_()
-            print(f"\n{self.classes[i]} Done!\n")
 
 
     # 클래스를 예측하는 메소드
@@ -173,11 +206,14 @@ class CVIW_MODEL:
         cost_list = []
 
         for cviw_group in self.cviw_groups:
-            cost_list.append(cviw_group.cost_function(cviw_weight))
-        
-        print(cost_list)
-        print(cost_list[0] / sum(cost_list), cost_list[1] / sum(cost_list))
-        return self.classes[np.argmin(cost_list)]
+            cost_list.append(cviw_group.cost(cviw_weight))
+
+        sum_cost_list = sum(cost_list)
+        predict = []
+        for i in cost_list:
+            predict.append(i / sum_cost_list)
+
+        return predict
 
 
     # 모델을 저장하는 메소드.
@@ -186,14 +222,14 @@ class CVIW_MODEL:
             pickle.dump(self.classes, file)
             pickle.dump(self.dsize, file)
 
-            important_weight = []
+            feature_weight = []
             for cviw_group in self.cviw_groups:
-                important_weight.append([])
+                feature_weight.append([])
 
-                for iw in cviw_group.important_weight:
-                    important_weight[-1].append(iw)
+                for iw in cviw_group.feature_weight:
+                    feature_weight[-1].append(iw)
 
-            pickle.dump(important_weight, file)
+            pickle.dump(feature_weight, file)
 
 
     # 모델을 로드하는 메소드.
@@ -201,15 +237,73 @@ class CVIW_MODEL:
         with open(model_path, 'rb') as file:
             self.classes = pickle.load(file)
             self.dsize = pickle.load(file)
-            important_weight = pickle.load(file)
+            feature_weight = pickle.load(file)
 
-            for i in range(len(important_weight)):
+            for i in range(len(feature_weight)):
                 
                 cviw_group = CVIW_GROUP(class_name=self.classes[i], dsize = self.dsize)
-                cviw_group.important_weight = important_weight[i]
+                cviw_group.feature_weight = feature_weight[i]
 
                 self.cviw_groups.append(cviw_group)
 
+
+
+# CVIW Update Class
+class CVIW_UPDATE:
+    def __init__(self, cviw_model, feature_group_number = [3], feature_weight_number = [50]) -> None:
+        self.cviw_model = cviw_model
+        self.feature_group_number = feature_group_number
+        self.feature_weight_number = feature_weight_number
+        self.validation_path = []
+        self.label = []
+        self.accuracy_list = []
+
+
+    # add validation method
+    def add_validation(self, class_name, path):
+        self.label.append(class_name)
+        self.validation_path.append(path)
+        
+
+    # setting method
+    def set(self, feature_group_number, feature_weight_number):
+        self.feature_group_number = feature_group_number
+        self.feature_weight_number = feature_weight_number
+
+
+    # update method
+    def update(self):
+        for fgn in self.feature_group_number:
+            for fwn in self.feature_weight_number:
+                for i in range(len(self.cviw_model.cviw_groups)):
+                    self.cviw_model.cviw_groups[i].update_(feature_group_number = fgn, feature_weight_number = fwn)
+                
+                self.accuracy_list.append(self.accuracy())
+                print(f"feature_group_number: {fgn}, feature_weight_nummber: {fwn} Done!, accuracy: {self.accuracy_list[-1]}")
+
+                
+    # accuracy method
+    def accuracy(self):
+        true = 0
+        count = 0
+
+        for i in range(len(self.validation_path)):
+            for file in listdir(self.validation_path[i]):
+                img = cv2.resize(cv2.cvtColor(cv2.imread(f"{self.validation_path[i]}\\{file}", 1), cv2.COLOR_BGR2GRAY), dsize=self.cviw_model.dsize).flatten().tolist()
+                predict = self.cviw_model.predict_class(img)
+                if predict.index(min(predict)) == i: true += 1
+                count += 1
+
+        return true / count
+
+
+    # print result method
+    def result(self):
+        i = 0
+        for fgn in self.feature_group_number:
+            for fwn in self.feature_weight_number:
+                print(f"feature_group_number: {fgn}, feature_weight_number: {fwn}, accuracy:{self.accuracy_list[i]}")
+                i += 1
 
 
 if __name__ == '__main__':
@@ -229,8 +323,8 @@ if __name__ == '__main__':
 
     # Cost Function
     cost_function = COST_FUNCTION(weights = [1, 7, 9, 14, 15, 23, 27])
-    cost_function.important_weight()
+    cost_function.feature_weight()
     x = linspace(0, 50, 1000)
-    y = [cost_function.cost(i) for i in x]
+    y = [cost_function.cost_function(i) for i in x]
     plt.plot(x, y)
     plt.show()
