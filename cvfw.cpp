@@ -4,25 +4,25 @@
 #include <iostream>
 #include <windows.h>
 
-// 0: ¿À¸¥ÂÊ À§ = m(y-1) + x + 1
-// 1: ¿À¸¥ÂÊ = my + x + 1
-// 2: ¿À¸¥ÂÊ ¾Æ·¡ = m(y+1) + x + 1
-// 3: ¾Æ·¡ = m(y+1) + x
-// 4: ¿ÞÂÊ ¾Æ·¡ = m(y+1) + x - 1
-// 5: ¿ÞÂÊ = my + x - 1
-// 6: ¿ÞÂÊ À§ = m(y-1) + x - 1
-// 7: À§ = m(y-1) + x
+// 0: ì˜¤ë¥¸ìª½ ìœ„ = m(y-1) + x + 1
+// 1: ì˜¤ë¥¸ìª½ = my + x + 1
+// 2: ì˜¤ë¥¸ìª½ ì•„ëž˜ = m(y+1) + x + 1
+// 3: ì•„ëž˜ = m(y+1) + x
+// 4: ì™¼ìª½ ì•„ëž˜ = m(y+1) + x - 1
+// 5: ì™¼ìª½ = my + x - 1
+// 6: ì™¼ìª½ ìœ„ = m(y-1) + x - 1
+// 7: ìœ„ = m(y-1) + x
 
-// weight[ÁÂÇ¥][À§ÀÇ ¹æÇâ Áß ÇÏ³ª]
+// weight[ì¢Œí‘œ][ìœ„ì˜ ë°©í–¥ ì¤‘ í•˜ë‚˜]
 
 
-// ÃßÈÄ¿¡´Â ÈüÀ» »ç¿ëÇÏ¿© SIZE ¸¦ ´Ã¸°´Ù. 
+// ì¶”í›„ì—ëŠ” íž™ì„ ì‚¬ìš©í•˜ì—¬ SIZE ë¥¼ ëŠ˜ë¦°ë‹¤. 
 #define SIZE 25000
 
 
 
 // ---------------- start -------------------- CVIW ---------------- start ------------------------
-// ÇÏ³ªÀÇ CVIW Å¬·¡½º 
+// í•˜ë‚˜ì˜ CVIW í´ëž˜ìŠ¤ 
 class CVIW {
 	public:
 		int m;
@@ -41,29 +41,29 @@ class CVIW {
 };
 
 
-// Ã¹¹øÂ° ÄÉÀÌ½º °¡ÁßÄ¡ 
+// ì²«ë²ˆì§¸ ì¼€ì´ìŠ¤ ê°€ì¤‘ì¹˜ 
 void CVIW::case1Weight() {
 	int x, y;
 	double w_;
 	
 	for(x = 0; x <= m-2; x++) {
 		for(y = 1; y <= n-2; y++) {
-			// ¿À¸¥ÂÊ À§ 
+			// ì˜¤ë¥¸ìª½ ìœ„ 
 			w_ = 1.0 * P[m*(y-1) + x + 1] / P[m*y+x];
 			weight[m*y + x][0] = w_;
 			weight[m*(y-1) + x + 1][4] = 1 / w_;
 			
-			// ¿À¸¥ÂÊ 
+			// ì˜¤ë¥¸ìª½ 
 			w_ = 1.0 * P[m*y + x + 1] / P[m*y+x];
 			weight[m*y + x][1] = w_;
 			weight[m*y + x + 1][5] = 1 / w_;
 			
-			// ¿À¸¥ÂÊ ¾Æ·¡ 
+			// ì˜¤ë¥¸ìª½ ì•„ëž˜ 
 			w_ = 1.0 * P[m*(y+1) + x + 1] / P[m*y+x];
 			weight[m*y + x][2] = w_;
 			weight[m*(y+1) + x + 1][6] = 1 / w_;
 			
-			// ¾Æ·¡ 
+			// ì•„ëž˜ 
 			w_ = 1.0 * P[m*(y+1) + x] / P[m*y+x];
 			weight[m*y + x][3] = w_;
 			weight[m*(y+1) + x][7] = 1 / w_;
@@ -72,22 +72,22 @@ void CVIW::case1Weight() {
 }
 
 
-// µÎ¹øÂ° ÄÉÀÌ½º °¡ÁßÄ¡		
+// ë‘ë²ˆì§¸ ì¼€ì´ìŠ¤ ê°€ì¤‘ì¹˜		
 void CVIW::case2Weight() {
 	double w_;
 	
 	for(int x = 0; x <= m-2; x++) {
-		// ¿À¸¥ÂÊ 
+		// ì˜¤ë¥¸ìª½ 
 		w_ = 1.0 * P[x+1] / P[x];
 		weight[x][1] = w_;
 		weight[x+1][5] = 1 / w_;
 		
-		// ¿À¸¥ÂÊ ¾Æ·¡
+		// ì˜¤ë¥¸ìª½ ì•„ëž˜
 		w_ = 1.0 * P[x+m+1] / P[x];
 		weight[x][2] = w_;
 		weight[x+m+1][6] = 1 / w_;
 		
-		// ¾Æ·¡
+		// ì•„ëž˜
 		w_ = 1.0 * P[x+m] / P[x];	
 		weight[x][3] = w_;
 		weight[x+m][7] = 1 / w_;
@@ -95,18 +95,18 @@ void CVIW::case2Weight() {
 }
 
 
-// ¼¼¹øÂ° ÄÉÀÌ½º °¡ÁßÄ¡		
+// ì„¸ë²ˆì§¸ ì¼€ì´ìŠ¤ ê°€ì¤‘ì¹˜		
 void CVIW::case3Weight() {
 	int x, y = n - 1;
 	double w_;
 	
 	for(x = 0; x <= m-2; x++) {
-		// ¿À¸¥ÂÊ À§
+		// ì˜¤ë¥¸ìª½ ìœ„
 		w_ = 1.0 * P[m*(y-1) + x + 1] / P[m*y + x];
 		weight[m*y + x][0] = w_;
 		weight[m*(y-1) + x + 1][4] = 1 / w_;
 		
-		// ¿À¸¥ÂÊ
+		// ì˜¤ë¥¸ìª½
 		w_ = 1.0 * P[m*y + x + 1] / P[m*y + x];
 		weight[m*y + x][1] = w_;
 		weight[m*y + x + 1][5] = 1 / w_;
@@ -114,13 +114,13 @@ void CVIW::case3Weight() {
 }
 
 
-// ³×¹øÂ° ÄÉÀÌ½º °¡ÁßÄ¡
+// ë„¤ë²ˆì§¸ ì¼€ì´ìŠ¤ ê°€ì¤‘ì¹˜
 void CVIW::case4Weight() {
 	int x = m - 1, y;
 	double w_;
 	
 	for(y = 0; y <= n-2; y++) {
-		// ¾Æ·¡ 
+		// ì•„ëž˜ 
 		w_ = 1.0 * P[m*(y+1) + x] / P[m*y + x];
 		weight[m*y + x][3] = w_;
 		weight[m*(y+1) + x][7] = 1 / w_;
@@ -128,7 +128,7 @@ void CVIW::case4Weight() {
 }
 
 
-// °¡ÁßÄ¡ Ãâ·Â ÇÔ¼ö 
+// ê°€ì¤‘ì¹˜ ì¶œë ¥ í•¨ìˆ˜ 
 void CVIW::printWeight() {
 	for(int i = 0; i < m*n; i++) {
 		for(int j = 0; j < 8; j++) {
@@ -140,7 +140,7 @@ void CVIW::printWeight() {
 }
 
 
-// °¡ÁßÄ¡ ±¸ÇÏ´Â ÇÔ¼ö 
+// ê°€ì¤‘ì¹˜ êµ¬í•˜ëŠ” í•¨ìˆ˜ 
 void CVIW::Weight_() {
 	if(m == 0 or n == 0) {
 		printf("m and n not must be 0. defined it again please.");
@@ -154,7 +154,7 @@ void CVIW::Weight_() {
 }
 
 
-// CVIW ¸¦ Init ÇÏ´Â ¸Þ¼Òµå 
+// CVIW ë¥¼ Init í•˜ëŠ” ë©”ì†Œë“œ 
 void CVIW::InitMembers(int m_, int n_, int P_[]) {
 	m = m_;
 	n = n_;
@@ -167,7 +167,7 @@ void CVIW::InitMembers(int m_, int n_, int P_[]) {
 
 // ----------- start --------------------- CVIW_GROUP --------------------- start ---------------------
 
-// ¿©·¯ CVIW ¸¦ ÇÑ¹ø¿¡ °ü¸®ÇÏ´Â Å¬·¡½º. 
+// ì—¬ëŸ¬ CVIW ë¥¼ í•œë²ˆì— ê´€ë¦¬í•˜ëŠ” í´ëž˜ìŠ¤. 
 class CVIW_GROUP {
 	public:
 		CVIW cviws[1001];
@@ -180,7 +180,7 @@ class CVIW_GROUP {
 		void Group();
 };
 
-// CVIW ¸¦ Ãß°¡ÇÏ´Â ¸Þ¼Òµå. 
+// CVIW ë¥¼ ì¶”ê°€í•˜ëŠ” ë©”ì†Œë“œ. 
 void CVIW_GROUP::add_cviw(int P[]) {
 	if(m == 0 or n == 0) {
 		printf("m and n not must be 0. defined it again please.");
@@ -196,7 +196,7 @@ void CVIW_GROUP::add_cviw(int P[]) {
 	idx++;
 }
 
-// CVIW_GROUP ¿¡ ÀÖ´Â ¸ðµç CVIWÀÇ °¡ÁßÄ¡¸¦ ÇÑ¹ø¿¡ ±¸ÇÏ´Â ¸Þ¼Òµå. 
+// CVIW_GROUP ì— ìžˆëŠ” ëª¨ë“  CVIWì˜ ê°€ì¤‘ì¹˜ë¥¼ í•œë²ˆì— êµ¬í•˜ëŠ” ë©”ì†Œë“œ. 
 void CVIW_GROUP::WeightAll() {
 	if(size < 1) {
 		printf("size not must be smaller than 1. defined it again please.")
@@ -217,7 +217,7 @@ int main() {
 	CVIW cviw;
 	cviw.m = 156; cviw.n = 156;
 	
-	for(int i = 0; i < 156*156; i++) cviw.P[i] = rand() % 256 + 1;    // P[i] °¡ 0 ÀÎ °æ¿ì¿¡´Â °¡ÁßÄ¡°¡ ¹«Á¶°Ç 0 ÀÌ ³ª¿À¹Ç·Î 1 À» ´õÇØÁØ´Ù. 
+	for(int i = 0; i < 156*156; i++) cviw.P[i] = rand() % 256 + 1;    // P[i] ê°€ 0 ì¸ ê²½ìš°ì—ëŠ” ê°€ì¤‘ì¹˜ê°€ ë¬´ì¡°ê±´ 0 ì´ ë‚˜ì˜¤ë¯€ë¡œ 1 ì„ ë”í•´ì¤€ë‹¤. 
 	
 	
 	
