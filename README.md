@@ -8,13 +8,5 @@
 
 
 1. 가중치를 구한다.
-- CVFW.Weight_()
-- CVFW_GROUP.weight_all()
-- 15 ~ 19  or 208 ~ 210  
-
 2. 여러 가중치들에 대해서 특징 가중치를 구한다.
-- COST_FUNCTION.feature_group()
-- CVFW_GROUP.train_()
-- 129 ~ 146 or 223 ~ 234  
-
 3. 각 클래스마다 cost 를 측정하고 cost 가 가장 작은 클래스가 예측 클래스이다.
