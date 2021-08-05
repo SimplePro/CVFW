@@ -135,6 +135,7 @@ class CVFW_GROUP:
     
     # train method.
     def train_(self, feature_group_number = 3, feature_weight_number = 50):
+        
         for i in tqdm(range(self.dsize[0] * self.dsize[1]), desc=self.class_name, mininterval=1):
             self.feature_weight.append([])
             for j in range(2):
@@ -153,6 +154,7 @@ class CVFW_GROUP:
     # update method
     def update_(self, feature_group_number, feature_weight_number):
         self.fw_count = 0
+
         for i in range(self.dsize[0] * self.dsize[1]):
             for j in range(2):
                 self.feature_weight[i][j].update__(feature_group_number, feature_weight_number)
@@ -171,7 +173,7 @@ class CVFW_GROUP:
         return sum([self.feature_weight[i][j].cost_function(weight[i][j]) for i in range(self.dsize[0] * self.dsize[1]) for j in range(2)]) / self.fw_count
 
     
-
+    # 가장 대표적인 특징을 담은 img를 모델링해서 반환하는 메소드.
     def modeling_(self, start = 1):
         img = [0 for _ in range(self.dsize[0] * self.dsize[1])]
         img[0] = start
