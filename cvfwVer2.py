@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-from numpy.core.fromnumeric import argsort
 from numpy.core.function_base import linspace
 from os import listdir
 import pickle
@@ -172,12 +171,48 @@ class CVFW_GROUP:
         return sum([self.feature_weight[i][j].cost_function(weight[i][j]) for i in range(self.dsize[0] * self.dsize[1]) for j in range(2)]) / self.fw_count
 
     
-    def modeling(self, start = 1):
-        img = [[] for _ in range(self.dsize[0] * self.dsize[1])]
-        img[0] = start
-        for i in range(self.dsize[0] * self.dsize[1]):
-            pass
 
+    def modeling_(self, start = 1):
+        img = [0 for _ in range(self.dsize[0] * self.dsize[1])]
+        img[0] = start
+
+        for i in range(1, self.dsize[0]):  # 맨 위 가로줄
+            right_mean_groups = self.feature_weight[i-1][0].mean_groups
+            right_group_c = self.feature_weight[i-1][0].group_c
+            right_weight = right_mean_groups[right_group_c.index(max(right_group_c))]
+
+            img[i] = right_weight * img[i-1]
+
+
+        for i in range(self.dsize[0], self.dsize[1] * self.dsize[0], self.dsize[0]):  # 왼쪽 세로줄
+            down_mean_groups = self.feature_weight[i - self.dsize[0]][1].mean_groups
+            down_group_c = self.feature_weight[i - self.dsize[0]][1].group_c
+            down_weight = down_mean_groups[down_group_c.index(max(down_group_c))]
+
+            img[i] = down_weight * img[i - self.dsize[0]]
+            
+
+        for x in range(1, self.dsize[0]):
+            for y in range(1, self.dsize[1]):
+                xy = self.dsize[0] * y + x
+
+                m = self.dsize[0]
+
+                right_mean_groups = self.feature_weight[xy-1][0].mean_groups
+                right_group_c = self.feature_weight[xy-1][0].group_c
+                right_weight = right_mean_groups[right_group_c.index(max(right_group_c))]
+                max_right_group_c = max(right_group_c)
+                
+                down_mean_groups = self.feature_weight[xy - m][1].mean_groups
+                down_group_c = self.feature_weight[xy - m][1].group_c
+                down_weight = down_mean_groups[down_group_c.index(max(down_group_c))]
+                max_down_group_c = max(down_group_c)
+
+                img[xy] = (img[xy-1] * right_weight * max_right_group_c + img[xy - m] * down_weight * max_down_group_c) / (max_right_group_c + max_down_group_c)
+
+        img = np.array(img).reshape(self.dsize[1], self.dsize[0])
+
+        return img
 
 
 # CVFW 모델 클래스
@@ -223,6 +258,13 @@ class CVFW_MODEL:
             predict.append(i / sum_cost_list)
 
         return predict
+
+
+    def modeling(self, class_name = "", start = 1):
+        cvfw_group = self.cvfw_groups[self.classes.index(class_name)]
+        img = cvfw_group.modeling_(start)
+        return img
+
 
 
     # 모델을 저장하는 메소드.
