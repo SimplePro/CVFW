@@ -274,6 +274,33 @@ class CVFW_MODEL:
         return predict
 
 
+    # 각 클래스의 가장 큰 특징을 나타내는 이미지의 유사도를 측정하여 클래스를 예측하는 메소드
+    # 하지만 cost 들의 값이 전부 비슷하기 때문에 추천되는 예측 방법이 아니다.
+    def modeling_predict_class(self, img):
+        cvfw_weight = Weight(self.dsize[0], self.dsize[1], img)
+        
+        class_weights = []
+
+        for class_name in self.classes:
+            modeling_img = self.modeling(class_name).flatten().tolist()
+            modeling_weight = Weight(self.dsize[0], self.dsize[1], modeling_img)
+            class_weights.append(modeling_weight)
+
+
+        class_cost = []
+
+        for class_weight in class_weights:
+            class_cost.append(sum(sum(abs(class_weight - cvfw_weight))))
+        
+        sum_cost_list = sum(class_cost)
+        predict = []
+        for cost in class_cost:
+            predict.append(cost / sum_cost_list)
+
+        return predict
+
+
+
     def modeling(self, class_name = "", start = 1):
         cvfw_group = self.cvfw_groups[self.classes.index(class_name)]
         img = cvfw_group.modeling_(start)
