@@ -2,13 +2,12 @@ import numpy as np
 import cv2
 from numpy.core.function_base import linspace
 from os import listdir
-import pickle
 from tqdm import tqdm
 
 
 # Weight method
 def Weight(m, n, P):
-    weight = np.zeros([50000, 2])
+    weight = np.zeros([m*n, 2])
     P = ((np.array(P) + 1) / 256.0).tolist()
 
 
@@ -266,39 +265,7 @@ class CVFW_MODEL:
         cvfw_group = self.cvfw_groups[self.classes.index(class_name)]
         img = cvfw_group.modeling_(start)
         return img
-
-
-
-    # 모델을 저장하는 메소드.
-    def save_model(self, model_name = ""):
-        with open(f"{model_name}.p", 'wb') as file:
-            pickle.dump(self.classes, file)
-            pickle.dump(self.dsize, file)
-
-            feature_weight = []
-            for cvfw_group in self.cvfw_groups:
-                feature_weight.append([])
-
-                for fw in cvfw_group.feature_weight:
-                    feature_weight[-1].append(fw)
-
-            pickle.dump(feature_weight, file)
-
-
-    # 모델을 로드하는 메소드.
-    def load_model(self, model_path = ""):
-        with open(model_path, 'rb') as file:
-            self.classes = pickle.load(file)
-            self.dsize = pickle.load(file)
-            feature_weight = pickle.load(file)
-
-            for i in range(len(feature_weight)):
-                
-                cvfw_group = CVFW_GROUP(class_name=self.classes[i], dsize = self.dsize)
-                cvfw_group.feature_weight = feature_weight[i]
-
-                self.cvfw_groups.append(cvfw_group)
-
+        
 
 
 # CVFW Update Class
