@@ -176,11 +176,16 @@ class CVFW_GROUP:
     def modeling_(self, start = 1):
         img = [0 for _ in range(self.dsize[0] * self.dsize[1])]
         img[0] = start
+        sum_c = 0
+        feature_c = 0
 
         for i in range(1, self.dsize[0]):  # 맨 위 가로줄
             right_mean_groups = self.feature_weight[i-1][0].mean_groups
             right_group_c = self.feature_weight[i-1][0].group_c
             right_weight = right_mean_groups[right_group_c.index(max(right_group_c))]
+
+            sum_c += sum(right_group_c) - max(right_group_c)
+            feature_c += max(right_group_c)
 
             img[i] = right_weight * img[i-1]
 
@@ -189,6 +194,9 @@ class CVFW_GROUP:
             down_mean_groups = self.feature_weight[i - self.dsize[0]][1].mean_groups
             down_group_c = self.feature_weight[i - self.dsize[0]][1].group_c
             down_weight = down_mean_groups[down_group_c.index(max(down_group_c))]
+
+            sum_c += sum(down_group_c) - max(down_group_c)
+            feature_c += max(down_group_c)
 
             img[i] = down_weight * img[i - self.dsize[0]]
             
@@ -209,9 +217,14 @@ class CVFW_GROUP:
                 down_weight = down_mean_groups[down_group_c.index(max(down_group_c))]
                 max_down_group_c = max(down_group_c)
 
+                sum_c += sum(right_group_c) + sum(down_group_c) - max_right_group_c - max_down_group_c
+                feature_c += max_right_group_c + max_down_group_c
+
                 img[xy] = (img[xy-1] * right_weight * max_right_group_c + img[xy - m] * down_weight * max_down_group_c) / (max_right_group_c + max_down_group_c)
 
         img = np.array(img).reshape(self.dsize[1], self.dsize[0])
+
+        print("(feature_count) / (sum count) :", feature_c / sum_c)
 
         return img
 
@@ -265,7 +278,7 @@ class CVFW_MODEL:
         cvfw_group = self.cvfw_groups[self.classes.index(class_name)]
         img = cvfw_group.modeling_(start)
         return img
-        
+
 
 
 # CVFW Update Class
