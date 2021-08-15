@@ -6,7 +6,7 @@
 3. P is one-dimensional data of image pixels.  
 
 
-### 1. Weights
+## 1. Weights
 ![image](https://user-images.githubusercontent.com/66504341/129468258-8b12767e-d233-41c2-97d9-8293dbc12ef0.png)  
 Weigihts formula  
 
@@ -14,7 +14,7 @@ Weigihts formula
 example  
   
   
-### 2. Weight grouping and feature grouping
+## 2. Weight grouping and feature grouping
 - Grouping: As a preparatory step before finding a feature group, K pieces of W_ij collected from K pieces of training data are grouped. While contemplating the idea of ‘How to group?’, I decided to find the densely packed weights, and defined the group as follows. Group G_ij as shown in the figure.
 (n_W_ij is the nth Wij.)  
 ![image](https://user-images.githubusercontent.com/66504341/129468346-e7de8ced-b65d-4ca6-b350-f51e497a2038.png)
@@ -30,7 +30,7 @@ example
    
   
    
-### 3. Cost Function
+## 3. Cost Function
 - The cost function is the amount of difference between the trained image and the image to be compared. The cost function is an important function used when predicting a class. The factor entering the cost function is the weight of the image to be compared. FW_COUNT plays a role in adjusting the cost function well according to the feature group (FW) of the learned image. For example, if the number of FW_ij with the number of elements greater than 1 in the learned image A is three, the probability that Cost(W) is low is very high. (Because C(W_ij) = 0 if FW_ij is empty) Using FW_COUNT is for this case.
 
 - A single cost function (cost function for one W_ij) is as follows. However, if FW_ij is empty, C(W_ij) = 0. (min is to find the minimum value among the matrices entered as arguments.)  
@@ -42,14 +42,14 @@ example
 
      
 
-### 4. Predict
+## 4. Predict
 - Image prediction is to predict the class of the image using the already learned image when there is an image to be predicted. Image prediction can be easily obtained using the cost function defined above.  
 ![image](https://user-images.githubusercontent.com/66504341/129468513-6d6f75d6-4542-43b7-b59d-69d8edd7360e.png)  
 
 
      
 
-### 5. Feature Modeling
+## 5. Feature Modeling
 - Feature modeling is to synthesize the largest features in one learned class and return them as an image. For example, when learning a bag with different shapes, it finds and returns common features even in bags with different shapes. The modeled data is represented by M.
 (W_ij is a feature group with the largest number of elements in FW_ij and N_ij is the maximum number of elements of groups in FW_ij)  
 ![image](https://user-images.githubusercontent.com/66504341/129468551-88ffd141-e968-48b2-a45d-38470ae79c65.png)  
