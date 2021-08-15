@@ -1,5 +1,5 @@
 import cv2
-from cvfwVer2 import CVFW_MODEL
+from cvfw import CVFW_MODEL
 
 model = CVFW_MODEL(dsize=(64, 64), feature_group_number = 7, feature_weight_number = 5)
 
