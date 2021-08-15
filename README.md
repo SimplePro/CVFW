@@ -7,20 +7,20 @@
 
 
 (1) Weights
-![image](https://user-images.githubusercontent.com/66504341/129468258-8b12767e-d233-41c2-97d9-8293dbc12ef0.png)
-Weigihts formula
+![image](https://user-images.githubusercontent.com/66504341/129468258-8b12767e-d233-41c2-97d9-8293dbc12ef0.png)  
+Weigihts formula  
 
-![image](https://user-images.githubusercontent.com/66504341/129468268-d064d251-26f4-419a-aba7-3c8441176eb8.png)
-example
+![image](https://user-images.githubusercontent.com/66504341/129468268-d064d251-26f4-419a-aba7-3c8441176eb8.png)  
+example  
 
 (2) Weight grouping and feature grouping
 - Grouping: As a preparatory step before finding a feature group, K pieces of W_ij collected from K pieces of training data are grouped. While contemplating the idea of ‘How to group?’, I decided to find the densely packed weights, and defined the group as follows. Group G_ij as shown in the figure.
-(n_W_ij is the nth Wij.)
+(n_W_ij is the nth Wij.)  
 ![image](https://user-images.githubusercontent.com/66504341/129468346-e7de8ced-b65d-4ca6-b350-f51e497a2038.png)
 
 
-- Feature group finding: There are variables that the user adjusts directly in the feature group finding, which can be seen as a practical learning step. FGN (Feature Group Number), which is the maximum number of feature groups allowed in one G_ij, and FWN (Feature Weight Number), which is the minimum number of elements in one feature group. The method to find the feature group is as follows. The feature group in G_ij is FW_ij (Feature Weight). In addition, FW_COUNT is used to define a cost function later.
-
+- Feature group finding: There are variables that the user adjusts directly in the feature group finding, which can be seen as a practical learning step. FGN (Feature Group Number), which is the maximum number of feature groups allowed in one G_ij, and FWN (Feature Weight Number), which is the minimum number of elements in one feature group. The method to find the feature group is as follows. The feature group in G_ij is FW_ij (Feature Weight). In addition, FW_COUNT is used to define a cost function later.  
+     
     Step 1. In one G_ij, the upper FGN groups are selected in the order of the largest number of elements.
     Step 2. Among the selected groups, the group that does not satisfy the minimum number of elements FWN is excluded.
     Step 3. The remaining groups after steps 1 and 2 are included in the feature group (FW_ij).
