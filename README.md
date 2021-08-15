@@ -7,11 +7,11 @@
 
 
 ## 1. Weights
+- Weigihts formula  
 ![image](https://user-images.githubusercontent.com/66504341/129468258-8b12767e-d233-41c2-97d9-8293dbc12ef0.png)  
-Weigihts formula  
 
+- example  
 ![image](https://user-images.githubusercontent.com/66504341/129468268-d064d251-26f4-419a-aba7-3c8441176eb8.png)  
-example  
   
   
 ## 2. Weight grouping and feature grouping
