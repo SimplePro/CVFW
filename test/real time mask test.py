@@ -1,5 +1,5 @@
 import cv2
-from cvfwVer2 import CVFW_MODEL
+from cvfw import CVFW_MODEL
 import numpy as np
 
 
