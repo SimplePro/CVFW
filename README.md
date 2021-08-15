@@ -12,7 +12,8 @@ Weigihts formula
 
 ![image](https://user-images.githubusercontent.com/66504341/129468268-d064d251-26f4-419a-aba7-3c8441176eb8.png)  
 example  
-
+  
+  
 ### 2. Weight grouping and feature grouping
 - Grouping: As a preparatory step before finding a feature group, K pieces of W_ij collected from K pieces of training data are grouped. While contemplating the idea of ‘How to group?’, I decided to find the densely packed weights, and defined the group as follows. Group G_ij as shown in the figure.
 (n_W_ij is the nth Wij.)  
@@ -27,6 +28,8 @@ example
     Step 4. Converts the groups in the feature group to the mean.
     Step 5. If the number of elements in the feature group is more than 1, add 1 to FW_COUNT.
    
+  
+   
 ### 3. Cost Function
 - The cost function is the amount of difference between the trained image and the image to be compared. The cost function is an important function used when predicting a class. The factor entering the cost function is the weight of the image to be compared. FW_COUNT plays a role in adjusting the cost function well according to the feature group (FW) of the learned image. For example, if the number of FW_ij with the number of elements greater than 1 in the learned image A is three, the probability that Cost(W) is low is very high. (Because C(W_ij) = 0 if FW_ij is empty) Using FW_COUNT is for this case.
 
@@ -37,11 +40,14 @@ example
 - The full cost function is  
 ![image](https://user-images.githubusercontent.com/66504341/129468472-82ea80e8-0105-4f85-83ba-76f1c1f47736.png)  
 
+     
 
 ### 4. Predict
 - Image prediction is to predict the class of the image using the already learned image when there is an image to be predicted. Image prediction can be easily obtained using the cost function defined above.  
 ![image](https://user-images.githubusercontent.com/66504341/129468513-6d6f75d6-4542-43b7-b59d-69d8edd7360e.png)  
 
+
+     
 
 ### 5. Feature Modeling
 - Feature modeling is to synthesize the largest features in one learned class and return them as an image. For example, when learning a bag with different shapes, it finds and returns common features even in bags with different shapes. The modeled data is represented by M.
