@@ -1,5 +1,8 @@
 # CVFW   (Computer Vision Feature Weight)
 ------------
+last updated date - 2021/08/16  
+  
+  
 ##### definition
 1. m is the horizontal size of the image, and n is the vertical size of the image.  
 2. W is the weight matrix between pixels.  
