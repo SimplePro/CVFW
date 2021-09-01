@@ -1,7 +1,7 @@
 #final real time mask test python file
 
 import cv2
-from cvfw_module.cvfw import CVFW_MODEL
+from cvfw import CVFW_MODEL
 import numpy as np
 
 
