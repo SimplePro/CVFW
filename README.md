@@ -1,6 +1,6 @@
 # CVFW   (Computer Vision Feature Weight)
 ------------
-last updated date - 2021/08/16  
+last updated date - 2021/09/01  
   
   
 ##### definition
