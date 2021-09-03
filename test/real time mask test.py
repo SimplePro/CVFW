@@ -13,7 +13,7 @@ model.add_directory(class_name="without mask", path="C:/kimdonghwan/python/CVFW/
 model.train()
 
 
-mask_case = cv2.resize(cv2.imread("./mask_case2.png"), dsize=(300, 300))
+mask_case = cv2.resize(cv2.imread("./mask_case.png"), dsize=(300, 300))
 
 mask_case_idx = []
 
